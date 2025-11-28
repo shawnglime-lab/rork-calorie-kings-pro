@@ -347,7 +347,7 @@ export default function CalendarScreen() {
             
             <View style={[styles.todayBadge, { backgroundColor: colors.primary + "20" }]} testID="calendar-today-pill">
                <Text style={[styles.todayBadgeText, { color: colors.primary }]}>
-                  {isToday(selectedDate) ? "Today" : selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {isToday(selectedDate) ? "Today" : selectedDate.toLocaleDateString("en-US", { month: "2-digit", day: "2-digit", year: "numeric" })}
                </Text>
             </View>
           </View>
