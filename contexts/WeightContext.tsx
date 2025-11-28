@@ -283,7 +283,10 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
   }, [entries, goal]);
 
   const forecast = useCallback((dailyCalories: number): ForecastData => {
-    const currentBmr = calculateBMR(stats.currentWeight, profile.height, profile.age, profile.isMale);
+    const currentWeight = stats.currentWeight || 0;
+    const targetWeight = goal.targetWeight || 0;
+    
+    const currentBmr = calculateBMR(currentWeight, profile.height, profile.age, profile.isMale);
     const currentTdee = calculateTDEE(currentBmr, goal.activityLevel);
     const currentDeficitOrSurplus = dailyCalories - currentTdee;
 
@@ -291,17 +294,28 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
     const expectedWeeklyChange = (currentDeficitOrSurplus * 7) / caloriesPerPound;
 
     let estimatedWeeksToGoal = 0;
-    const weightDifference = goal.targetWeight - stats.currentWeight;
+    const weightDifference = targetWeight - currentWeight;
     
-    if (Math.abs(weightDifference) < 0.1) {
+    console.log('[Forecast] Current weight:', currentWeight);
+    console.log('[Forecast] Target weight:', targetWeight);
+    console.log('[Forecast] Weight difference:', weightDifference);
+    console.log('[Forecast] Daily calories:', dailyCalories);
+    console.log('[Forecast] Current TDEE:', currentTdee);
+    console.log('[Forecast] Expected weekly change:', expectedWeeklyChange);
+    
+    if (currentWeight === 0 || targetWeight === 0) {
       estimatedWeeksToGoal = 0;
-    } else if (expectedWeeklyChange === 0) {
+    } else if (Math.abs(weightDifference) < 0.1) {
+      estimatedWeeksToGoal = 0;
+    } else if (Math.abs(expectedWeeklyChange) < 0.01) {
       estimatedWeeksToGoal = Number.POSITIVE_INFINITY;
     } else {
-      let simulatedWeight = stats.currentWeight;
+      let simulatedWeight = currentWeight;
       let weeks = 0;
       const maxWeeks = 520;
       const isLosingWeight = weightDifference < 0;
+      
+      console.log('[Forecast] Starting simulation, isLosingWeight:', isLosingWeight);
       
       while (weeks < maxWeeks) {
         const weekBmr = calculateBMR(simulatedWeight, profile.height, profile.age, profile.isMale);
@@ -313,19 +327,26 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
         weeks++;
         
         if (isLosingWeight) {
-          if (simulatedWeight <= goal.targetWeight) {
+          if (simulatedWeight <= targetWeight) {
             estimatedWeeksToGoal = weeks;
+            console.log('[Forecast] Goal reached at week', weeks, 'weight:', simulatedWeight);
             break;
           }
         } else {
-          if (simulatedWeight >= goal.targetWeight) {
+          if (simulatedWeight >= targetWeight) {
             estimatedWeeksToGoal = weeks;
+            console.log('[Forecast] Goal reached at week', weeks, 'weight:', simulatedWeight);
             break;
           }
+        }
+        
+        if (weeks % 10 === 0) {
+          console.log('[Forecast] Week', weeks, 'simulated weight:', simulatedWeight);
         }
       }
       
       if (weeks >= maxWeeks) {
+        console.log('[Forecast] Max weeks reached, goal not achievable');
         estimatedWeeksToGoal = Number.POSITIVE_INFINITY;
       }
     }
