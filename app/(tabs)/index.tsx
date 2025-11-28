@@ -1168,7 +1168,7 @@ const styles = StyleSheet.create({
   },
   logoImage: {
     width: wp(60),
-    height: hp(5),
+    height: hp(8),
   },
   dateText: {
     fontSize: 13,
