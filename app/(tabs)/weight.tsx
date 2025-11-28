@@ -52,17 +52,34 @@ function getBMICategory(bmi: number): { label: string; color: string } {
   return { label: "Obese", color: "#EF4444" };
 }
 
+function convertToISO(mmddyyyy: string): string | null {
+  if (mmddyyyy.length !== 10) return null;
+  const parts = mmddyyyy.split("/");
+  if (parts.length !== 3) return null;
+  const [month, day, year] = parts.map(Number);
+  if (!month || !day || !year || month < 1 || month > 12 || day < 1 || day > 31) return null;
+  const date = new Date(year, month - 1, day);
+  if (isNaN(date.getTime())) return null;
+  return date.toISOString().split("T")[0];
+}
+
+function convertFromISO(iso: string): string {
+  if (!iso || iso.length < 10) return "";
+  const [year, month, day] = iso.split("-");
+  return `${month}/${day}/${year}`;
+}
+
 function formatDateInput(text: string): string {
   const digitsOnly = text.replace(/\D/g, "");
   let formatted = "";
 
   if (digitsOnly.length > 0) {
-    formatted = digitsOnly.substring(0, 4);
-    if (digitsOnly.length >= 5) {
-      formatted += "-" + digitsOnly.substring(4, 6);
+    formatted = digitsOnly.substring(0, 2);
+    if (digitsOnly.length >= 3) {
+      formatted += "/" + digitsOnly.substring(2, 4);
     }
-    if (digitsOnly.length >= 7) {
-      formatted += "-" + digitsOnly.substring(6, 8);
+    if (digitsOnly.length >= 5) {
+      formatted += "/" + digitsOnly.substring(4, 8);
     }
   }
 
@@ -311,15 +328,18 @@ export default function WeightScreen() {
     if (selectedEntryId) {
       const weight = parseFloat(editWeight);
       if (weight && weight > 0 && editDate) {
-        updateWeightEntry(selectedEntryId, weight, editDate);
-        setShowEditModal(false);
-        setSelectedEntryId(null);
-        setEditWeight("");
-        setEditDate("");
-        
-        if (Platform.OS !== "web") {
-          const Haptics = await import("expo-haptics");
-          Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        const dateISO = convertToISO(editDate);
+        if (dateISO) {
+          updateWeightEntry(selectedEntryId, weight, dateISO);
+          setShowEditModal(false);
+          setSelectedEntryId(null);
+          setEditWeight("");
+          setEditDate("");
+          
+          if (Platform.OS !== "web") {
+            const Haptics = await import("expo-haptics");
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+          }
         }
       }
     }
@@ -451,7 +471,8 @@ export default function WeightScreen() {
             <TouchableOpacity 
               onPress={() => {
                 setEditStartWeight(goal.startWeight.toString());
-                setEditStartDate(goal.startDate || new Date().toISOString().split("T")[0]);
+                const dateISO = goal.startDate || new Date().toISOString().split("T")[0];
+                setEditStartDate(convertFromISO(dateISO));
                 setShowStartWeightModal(true);
               }}
               style={{ marginTop: 6 }}
@@ -566,7 +587,7 @@ export default function WeightScreen() {
                           onPress={() => {
                             setSelectedEntryId(entry.id);
                             setEditWeight(entry.weight.toString());
-                            setEditDate(entry.date);
+                            setEditDate(convertFromISO(entry.date));
                             setShowEditModal(true);
                           }}
                           style={[styles.recentActionButton, { padding: 6, borderRadius: 6, backgroundColor: colors.surface }]}
@@ -890,7 +911,7 @@ export default function WeightScreen() {
                       returnKeyType="next"
                     />
 
-                    <Text style={[styles.inputLabel, { color: colors.text }]}>Date (YYYY-MM-DD)</Text>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>Date (MM/DD/YYYY)</Text>
                     <View style={styles.dateInputRow}>
                       <TextInput
                         style={[styles.input, { flex: 1, backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
@@ -898,7 +919,7 @@ export default function WeightScreen() {
                         value={editDate}
                         onChangeText={(text) => setEditDate(formatDateInput(text))}
                         keyboardType="number-pad"
-                        placeholder="YYYY-MM-DD"
+                        placeholder="MM/DD/YYYY"
                         maxLength={10}
                         returnKeyType="done"
                         onSubmitEditing={handleSaveEdit}
@@ -907,11 +928,8 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
-                          Keyboard.dismiss();
-                          setTimeout(() => {
-                            setDatePickerType("edit");
-                            setShowDatePicker(true);
-                          }, 100);
+                          setDatePickerType("edit");
+                          setShowDatePicker(true);
                         }}
                         accessibilityRole="button"
                         accessibilityLabel="Open calendar"
@@ -1000,7 +1018,7 @@ export default function WeightScreen() {
                       returnKeyType="next"
                     />
 
-                    <Text style={[styles.inputLabel, { color: colors.text }]}>Starting Date (YYYY-MM-DD)</Text>
+                    <Text style={[styles.inputLabel, { color: colors.text }]}>Starting Date (MM/DD/YYYY)</Text>
                     <View style={styles.dateInputRow}>
                       <TextInput
                         style={[styles.input, { flex: 1, backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
@@ -1008,7 +1026,7 @@ export default function WeightScreen() {
                         value={editStartDate}
                         onChangeText={(text) => setEditStartDate(formatDateInput(text))}
                         keyboardType="number-pad"
-                        placeholder="YYYY-MM-DD"
+                        placeholder="MM/DD/YYYY"
                         maxLength={10}
                         returnKeyType="done"
                         testID="start-date-input"
@@ -1016,11 +1034,8 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
-                          Keyboard.dismiss();
-                          setTimeout(() => {
-                            setDatePickerType("start");
-                            setShowDatePicker(true);
-                          }, 100);
+                          setDatePickerType("start");
+                          setShowDatePicker(true);
                         }}
                         accessibilityRole="button"
                         accessibilityLabel="Open calendar"
@@ -1036,11 +1051,14 @@ export default function WeightScreen() {
                       onPress={async () => {
                         const weight = parseFloat(editStartWeight);
                         if (weight && weight > 0 && editStartDate) {
-                          updateStartWeightAndDate(weight, editStartDate);
-                          setShowStartWeightModal(false);
-                          
-                          if (Platform.OS !== "web") {
-                            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                          const dateISO = convertToISO(editStartDate);
+                          if (dateISO) {
+                            updateStartWeightAndDate(weight, dateISO);
+                            setShowStartWeightModal(false);
+                            
+                            if (Platform.OS !== "web") {
+                              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                            }
                           }
                         }
                       }}
@@ -1137,7 +1155,6 @@ export default function WeightScreen() {
         }}
         initialDate={datePickerType === "edit" ? editDate : editStartDate}
         title={datePickerType === "edit" ? "Select Date" : "Select Starting Date"}
-        maxDate={new Date().toISOString().split("T")[0]}
       />
 
       <Modal

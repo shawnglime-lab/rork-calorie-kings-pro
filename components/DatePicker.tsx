@@ -42,8 +42,11 @@ export default function DatePicker({
     if (visible && initialDate) {
       setDateInput(initialDate);
     } else if (visible) {
-      const today = new Date().toISOString().split("T")[0];
-      setDateInput(today);
+      const today = new Date();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      const yyyy = today.getFullYear();
+      setDateInput(`${mm}/${dd}/${yyyy}`);
     }
   }, [visible, initialDate]);
 
@@ -52,12 +55,12 @@ export default function DatePicker({
     
     let formatted = "";
     if (digitsOnly.length > 0) {
-      formatted = digitsOnly.substring(0, 4);
-      if (digitsOnly.length >= 5) {
-        formatted += "-" + digitsOnly.substring(4, 6);
+      formatted = digitsOnly.substring(0, 2);
+      if (digitsOnly.length >= 3) {
+        formatted += "/" + digitsOnly.substring(2, 4);
       }
-      if (digitsOnly.length >= 7) {
-        formatted += "-" + digitsOnly.substring(6, 8);
+      if (digitsOnly.length >= 5) {
+        formatted += "/" + digitsOnly.substring(4, 8);
       }
     }
     return formatted;
@@ -70,7 +73,7 @@ export default function DatePicker({
 
   const handleConfirm = () => {
     if (dateInput.length === 10) {
-      const [year, month, day] = dateInput.split("-").map(Number);
+      const [month, day, year] = dateInput.split("/").map(Number);
       if (year && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
         const date = new Date(year, month - 1, day);
         if (!isNaN(date.getTime())) {
@@ -108,12 +111,12 @@ export default function DatePicker({
                 </View>
 
                 <View style={styles.inputContainer}>
-                  <Text style={[styles.label, { color: colors.textSecondary }]}>Enter date (YYYY-MM-DD)</Text>
+                  <Text style={[styles.label, { color: colors.textSecondary }]}>Enter date (MM/DD/YYYY)</Text>
                   <TextInput
                     style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
                     value={dateInput}
                     onChangeText={handleTextChange}
-                    placeholder="YYYY-MM-DD"
+                    placeholder="MM/DD/YYYY"
                     placeholderTextColor={colors.textTertiary}
                     keyboardType="number-pad"
                     maxLength={10}
@@ -121,7 +124,7 @@ export default function DatePicker({
                     returnKeyType="done"
                     onSubmitEditing={handleConfirm}
                   />
-                  <Text style={[styles.hint, { color: colors.textTertiary }]}>Example: 2024-03-15</Text>
+                  <Text style={[styles.hint, { color: colors.textTertiary }]}>Example: 03/15/2024</Text>
                 </View>
               </View>
             </TouchableWithoutFeedback>
