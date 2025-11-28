@@ -1167,7 +1167,8 @@ const styles = StyleSheet.create({
     paddingBottom: scale(4),
   },
   logoImage: {
-    height: scale(38),
+    width: wp(60),
+    height: hp(5),
     resizeMode: "contain" as const,
     alignSelf: "center" as const,
   },
