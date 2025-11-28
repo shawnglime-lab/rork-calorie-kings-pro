@@ -1170,10 +1170,10 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   logoImage: {
-    width: wp(95),
-    height: hp(12),
+    width: wp(98),
+    height: hp(13),
     zIndex: 10,
-    marginBottom: scale(-4),
+    marginBottom: scale(-6),
   },
   dateText: {
     fontSize: 13,
