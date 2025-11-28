@@ -1,11 +1,10 @@
 import React, { useRef, useMemo, useState, useCallback } from "react";
-import { View, Text, StyleSheet, ScrollView, Animated, PanResponder, TouchableOpacity, Platform } from "react-native";
+import { View, Text, StyleSheet, ScrollView, Animated, PanResponder, TouchableOpacity } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Calendar as CalendarIcon, Trash2, Clock } from "lucide-react-native";
+import { Calendar, Trash2, Clock } from "lucide-react-native";
 import { useCalorieTracker } from "@/contexts/CalorieContext";
 import { useFasting, type Fast } from "@/contexts/FastingContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import DatePicker from "@/components/DatePicker";
 
 function SwipeToDelete({
   children,
@@ -121,15 +120,13 @@ function SwipeToDelete({
 
 export default function HistoryScreen() {
   const { todayLog, removeFood, addFood } = useCalorieTracker();
-  const { history, deleteFast, updateFast, getCompletedFastDuration } = useFasting();
+  const { history, deleteFast, getCompletedFastDuration } = useFasting();
   const { theme } = useTheme();
   const colors = theme.colors;
   const insets = useSafeAreaInsets();
   const [openItemId, setOpenItemId] = useState<string | null>(null);
   const [undoFood, setUndoFood] = useState<{ id: string; name: string; servingAmount: number; servingSize: string; calories: number; protein: number; carbs: number; fat: number; timestamp?: number; source?: "database" | "ai" | "user" | "fast-food" | "barcode"; brand?: string; barcode?: string; confidence?: number } | null>(null);
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [editingFast, setEditingFast] = useState<Fast | null>(null);
-  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const handleRemoveFood = useCallback((food: { id: string; name: string; servingAmount: number; servingSize: string; calories: number; protein: number; carbs: number; fat: number; timestamp?: number; source?: "database" | "ai" | "user" | "fast-food" | "barcode"; brand?: string; barcode?: string; confidence?: number }) => {
     removeFood(food.id);
@@ -161,35 +158,6 @@ export default function HistoryScreen() {
       }
     }
   }, [undoFood, addFood]);
-
-  const handleEditStartDate = useCallback((fast: Fast) => {
-    setEditingFast(fast);
-    setShowDatePicker(true);
-  }, []);
-
-  const handleDateSelect = useCallback((dateString: string) => {
-    if (!editingFast) return;
-    
-    const [year, month, day] = dateString.split("-").map(Number);
-    const originalDate = new Date(editingFast.startTime);
-    const newDate = new Date(
-      year,
-      month - 1,
-      day,
-      originalDate.getHours(),
-      originalDate.getMinutes(),
-      originalDate.getSeconds()
-    );
-    
-    updateFast(editingFast.id, { startTime: newDate.getTime() });
-    setEditingFast(null);
-    
-    if (Platform.OS !== "web") {
-      import("expo-haptics").then((Haptics) => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-      }).catch(() => {});
-    }
-  }, [editingFast, updateFast]);
 
   React.useEffect(() => {
     return () => {
@@ -252,15 +220,8 @@ export default function HistoryScreen() {
                           }) : "In Progress"}
                         </Text>
                       </View>
-                      <View style={styles.fastRight}>
+                      <View style={styles.foodRight}>
                         <Text style={[styles.foodCalories, { color: colors.primary }]}>{getCompletedFastDuration(fast)}</Text>
-                        <TouchableOpacity
-                          onPress={() => handleEditStartDate(fast)}
-                          style={[styles.editButton, { backgroundColor: colors.surface }]}
-                          activeOpacity={0.7}
-                        >
-                          <CalendarIcon color={colors.primary} size={16} />
-                        </TouchableOpacity>
                       </View>
                     </View>
                   </SwipeToDelete>
@@ -271,12 +232,12 @@ export default function HistoryScreen() {
 
           <View style={[styles.todayCard, { backgroundColor: colors.card, shadowColor: colors.shadow, marginTop: 16 }]}>
             <View style={styles.sectionHeader}>
-              <CalendarIcon color={colors.primary} size={24} />
+              <Calendar color={colors.primary} size={24} />
               <Text style={[styles.todayTitle, { color: colors.text }]}>Today&apos;s Foods</Text>
             </View>
             {todayLog.foods.length === 0 ? (
               <View style={styles.emptyState}>
-                <CalendarIcon color={colors.textTertiary} size={40} />
+                <Calendar color={colors.textTertiary} size={40} />
                 <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No foods logged today</Text>
               </View>
             ) : (
@@ -320,17 +281,6 @@ export default function HistoryScreen() {
           </View>
         </View>
       </ScrollView>
-
-      <DatePicker
-        visible={showDatePicker}
-        onClose={() => {
-          setShowDatePicker(false);
-          setEditingFast(null);
-        }}
-        onSelect={handleDateSelect}
-        initialDate={editingFast ? new Date(editingFast.startTime).toISOString().split("T")[0] : undefined}
-        title="Edit Start Date"
-      />
     </View>
   );
 }
@@ -403,15 +353,6 @@ const styles = StyleSheet.create({
   },
   foodRight: {
     gap: 4,
-  },
-  fastRight: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  editButton: {
-    padding: 8,
-    borderRadius: 8,
   },
   foodCalories: {
     fontSize: 15,
