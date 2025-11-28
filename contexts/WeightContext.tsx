@@ -12,6 +12,7 @@ const DEFAULT_WEIGHT_GOAL: WeightGoal = {
   activityLevel: "moderate",
   poundsPerWeek: 0,
   useCustomMacros: false,
+  macroMode: "standard",
 };
 
 function calculateBMR(weight: number, height: number = 70, age: number = 30, isMale: boolean = true): number {
@@ -72,7 +73,9 @@ export function calculateRecommendedMacros(
   isMale: boolean,
   activityLevel: WeightGoal["activityLevel"],
   goalType: WeightGoal["goalType"],
-  poundsPerWeek: number
+  poundsPerWeek: number,
+  macroMode?: "standard" | "muscle_conservation",
+  goalWeight?: number
 ): { calories: number; protein: number; carbs: number; fat: number } {
   const bmr = calculateBMR(currentWeight, height, age, isMale);
   const tdee = calculateTDEE(bmr, activityLevel);
@@ -90,16 +93,35 @@ export function calculateRecommendedMacros(
   
   targetCalories = Math.round(Math.max(1200, targetCalories));
   
-  const proteinGramsPerPound = 0.8;
-  const protein = Math.round(currentWeight * proteinGramsPerPound);
+  const mode = macroMode || "standard";
   
-  const proteinCalories = protein * 4;
-  const fatPercentage = 0.25;
-  const fatCalories = targetCalories * fatPercentage;
-  const fat = Math.round(fatCalories / 9);
+  let protein = 0;
+  let fat = 0;
+  let carbs = 0;
   
-  const carbCalories = targetCalories - proteinCalories - fatCalories;
-  const carbs = Math.round(carbCalories / 4);
+  if (mode === "standard") {
+    const proteinCalories = targetCalories * 0.30;
+    const fatCalories = targetCalories * 0.30;
+    const carbCalories = targetCalories * 0.40;
+    
+    protein = Math.round(proteinCalories / 4);
+    fat = Math.round(fatCalories / 9);
+    carbs = Math.round(carbCalories / 4);
+  } else if (mode === "muscle_conservation") {
+    const goalWeightLbs = goalWeight || currentWeight;
+    protein = Math.round(goalWeightLbs * 1.0);
+    const proteinCalories = protein * 4;
+    
+    const fatCalories = targetCalories * 0.30;
+    fat = Math.round(fatCalories / 9);
+    
+    let remainingCalories = targetCalories - proteinCalories - fatCalories;
+    if (remainingCalories < 0) {
+      remainingCalories = 0;
+    }
+    
+    carbs = Math.round(remainingCalories / 4);
+  }
   
   return {
     calories: targetCalories,
@@ -143,6 +165,7 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
           ...parsed,
           poundsPerWeek: parsed.poundsPerWeek ?? (parsed.goalType === "lose" ? 1 : (parsed.goalType === "gain" ? 0.5 : 0)),
           useCustomMacros: parsed.useCustomMacros ?? false,
+          macroMode: parsed.macroMode ?? "standard",
         };
         
         return migratedGoal;

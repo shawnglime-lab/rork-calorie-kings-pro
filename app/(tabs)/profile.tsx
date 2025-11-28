@@ -27,6 +27,7 @@ export default function ProfileScreen() {
   const [goalType, setGoalType] = useState<"lose" | "gain" | "maintain">(goal.goalType);
   const [poundsPerWeek, setPoundsPerWeek] = useState(goal.poundsPerWeek.toString());
   const [useCustomMacros, setUseCustomMacros] = useState(goal.useCustomMacros);
+  const [macroMode, setMacroMode] = useState<"standard" | "muscle_conservation">(goal.macroMode || "standard");
   
   const [calories, setCalories] = useState(goals.calories.toString());
   const [protein, setProtein] = useState(goals.protein.toString());
@@ -62,6 +63,7 @@ export default function ProfileScreen() {
     const heightNum = (heightFeetNum || 5) * 12 + (heightInchesNum || 10);
     const ageNum = parseInt(age) || 30;
     const poundsNum = parseFloat(poundsPerWeek) || 0;
+    const goalWeightNum = parseFloat(goalWeight) || stats.currentWeight;
     
     return calculateRecommendedMacros(
       stats.currentWeight,
@@ -70,9 +72,11 @@ export default function ProfileScreen() {
       isMale,
       activityLevel,
       goalType,
-      poundsNum
+      poundsNum,
+      macroMode,
+      goalWeightNum
     );
-  }, [stats.currentWeight, heightFeet, heightInches, age, isMale, activityLevel, goalType, poundsPerWeek]);
+  }, [stats.currentWeight, heightFeet, heightInches, age, isMale, activityLevel, goalType, poundsPerWeek, macroMode, goalWeight]);
 
   useEffect(() => {
     if (useAutoWaterGoal) {
@@ -129,12 +133,14 @@ export default function ProfileScreen() {
           goalType,
           poundsPerWeek: poundsNum,
           useCustomMacros,
+          macroMode,
         });
       } else {
         updateWeightGoal({
           activityLevel,
           goalType,
           useCustomMacros,
+          macroMode,
         });
       }
     } else {
@@ -142,6 +148,7 @@ export default function ProfileScreen() {
         activityLevel,
         goalType,
         useCustomMacros,
+        macroMode,
       });
     }
 
@@ -503,6 +510,73 @@ export default function ProfileScreen() {
               />
             </View>
 
+            {!useCustomMacros && (
+              <View style={[styles.macroSettingsCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                <Text style={[styles.macroSettingsTitle, { color: colors.text }]}>Macro Settings</Text>
+                <Text style={[styles.macroSettingsDesc, { color: colors.textSecondary }]}>
+                  Choose how to calculate your macros based on your goals
+                </Text>
+
+                <View style={styles.macroModeOptions}>
+                  <TouchableOpacity
+                    style={[
+                      styles.macroModeOption,
+                      { 
+                        backgroundColor: macroMode === "standard" ? colors.primary : colors.card, 
+                        borderColor: macroMode === "standard" ? colors.primary : colors.border 
+                      },
+                    ]}
+                    onPress={() => setMacroMode("standard")}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.macroModeTitle, { color: macroMode === "standard" ? "#FFFFFF" : colors.text }]}>Standard Split</Text>
+                    <Text style={[styles.macroModeDesc, { color: macroMode === "standard" ? "#FFFFFF" : colors.textSecondary }]}>Balanced macros based on your calories (40% carbs, 30% protein, 30% fat)</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[
+                      styles.macroModeOption,
+                      { 
+                        backgroundColor: macroMode === "muscle_conservation" ? colors.primary : colors.card, 
+                        borderColor: macroMode === "muscle_conservation" ? colors.primary : colors.border 
+                      },
+                    ]}
+                    onPress={() => setMacroMode("muscle_conservation")}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[styles.macroModeTitle, { color: macroMode === "muscle_conservation" ? "#FFFFFF" : colors.text }]}>Muscle Conservation</Text>
+                    <Text style={[styles.macroModeDesc, { color: macroMode === "muscle_conservation" ? "#FFFFFF" : colors.textSecondary }]}>1g of protein per lb of your goal weight to help keep muscle while losing fat</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {macroMode === "muscle_conservation" && (!goalWeight || parseFloat(goalWeight) === 0) && (
+                  <View style={[styles.warningBox, { backgroundColor: "#FFF3CD", borderColor: "#FFE5A1" }]}>
+                    <Text style={[styles.warningText, { color: "#856404" }]}>Please set a goal weight above to calculate muscle conservation macros</Text>
+                  </View>
+                )}
+
+                {macroMode === "muscle_conservation" && recommendedMacros.carbs === 0 && parseFloat(goalWeight) > 0 && (
+                  <View style={[styles.warningBox, { backgroundColor: "#FFF3CD", borderColor: "#FFE5A1" }]}>
+                    <Text style={[styles.warningText, { color: "#856404" }]}>Calories are too low for this macro setup. Consider raising calories or lowering protein.</Text>
+                  </View>
+                )}
+
+                <View style={styles.macroDisplay}>
+                  <View style={styles.macroDisplayRow}>
+                    <Text style={[styles.macroDisplayLabel, { color: colors.textSecondary }]}>Protein:</Text>
+                    <Text style={[styles.macroDisplayValue, { color: colors.text }]}>{recommendedMacros.protein}g</Text>
+                  </View>
+                  <View style={styles.macroDisplayRow}>
+                    <Text style={[styles.macroDisplayLabel, { color: colors.textSecondary }]}>Carbs:</Text>
+                    <Text style={[styles.macroDisplayValue, { color: colors.text }]}>{recommendedMacros.carbs}g</Text>
+                  </View>
+                  <View style={styles.macroDisplayRow}>
+                    <Text style={[styles.macroDisplayLabel, { color: colors.textSecondary }]}>Fats:</Text>
+                    <Text style={[styles.macroDisplayValue, { color: colors.text }]}>{recommendedMacros.fat}g</Text>
+                  </View>
+                </View>
+              </View>
+            )}
+
             <View style={[styles.card, { backgroundColor: colors.surface, shadowColor: "transparent", marginBottom: 0 }]}>
               <View style={styles.cardHeader}>
                 <Droplets color={colors.water} size={24} />
@@ -749,5 +823,66 @@ const styles = StyleSheet.create({
   goalTypeText: {
     fontSize: 15,
     fontWeight: "600" as const,
+  },
+  macroSettingsCard: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    marginTop: 4,
+    marginBottom: 12,
+  },
+  macroSettingsTitle: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+    marginBottom: 4,
+  },
+  macroSettingsDesc: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  macroModeOptions: {
+    gap: 12,
+    marginBottom: 16,
+  },
+  macroModeOption: {
+    padding: 14,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  macroModeTitle: {
+    fontSize: 15,
+    fontWeight: "600" as const,
+    marginBottom: 4,
+  },
+  macroModeDesc: {
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  macroDisplay: {
+    gap: 10,
+  },
+  macroDisplayRow: {
+    flexDirection: "row" as const,
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  macroDisplayLabel: {
+    fontSize: 14,
+    fontWeight: "500" as const,
+  },
+  macroDisplayValue: {
+    fontSize: 16,
+    fontWeight: "600" as const,
+  },
+  warningBox: {
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  warningText: {
+    fontSize: 13,
+    lineHeight: 18,
   },
 });

@@ -13,6 +13,7 @@ export interface WeightGoal {
   activityLevel: "sedentary" | "light" | "moderate" | "active" | "very_active";
   poundsPerWeek: number;
   useCustomMacros: boolean;
+  macroMode: "standard" | "muscle_conservation";
 }
 
 export interface WeightStats {
