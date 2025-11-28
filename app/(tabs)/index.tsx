@@ -1173,7 +1173,7 @@ const styles = StyleSheet.create({
     width: wp(95),
     height: hp(12),
     zIndex: 10,
-    marginBottom: scale(-8),
+    marginBottom: scale(-18),
   },
   dateText: {
     fontSize: 13,
