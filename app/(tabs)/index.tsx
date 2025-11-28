@@ -1167,10 +1167,12 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
     gap: scale(8),
     marginTop: scale(-30),
+    zIndex: 10,
   },
   logoImage: {
     width: wp(90),
     height: hp(10),
+    zIndex: 10,
   },
   dateText: {
     fontSize: 13,
