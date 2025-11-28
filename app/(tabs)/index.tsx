@@ -1163,14 +1163,12 @@ const styles = StyleSheet.create({
   },
   header: {
     paddingHorizontal: wp(5),
-    paddingBottom: hp(1),
+    paddingVertical: hp(0.5),
     alignItems: "center" as const,
-    gap: scale(8),
-    marginTop: scale(10),
   },
   logoImage: {
-    width: wp(90),
-    height: hp(10),
+    width: wp(60),
+    height: hp(5),
   },
   dateText: {
     fontSize: 13,
