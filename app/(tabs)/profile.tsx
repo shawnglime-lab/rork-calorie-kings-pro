@@ -12,18 +12,22 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Target, Save, Droplets, User } from "lucide-react-native";
 import { useCalorieTracker } from "@/contexts/CalorieContext";
-import { useWeightTracker } from "@/contexts/WeightContext";
+import { useWeightTracker, calculateRecommendedMacros } from "@/contexts/WeightContext";
 import { useTheme } from "@/contexts/ThemeContext";
 
 
 export default function ProfileScreen() {
   const { goals, updateGoals } = useCalorieTracker();
-  const { stats, profile, updateProfile } = useWeightTracker();
+  const { stats, profile, goal, updateProfile, updateWeightGoal } = useWeightTracker();
   const { theme } = useTheme();
 
   const colors = theme.colors;
   const insets = useSafeAreaInsets();
 
+  const [goalType, setGoalType] = useState<"lose" | "gain" | "maintain">(goal.goalType);
+  const [poundsPerWeek, setPoundsPerWeek] = useState(goal.poundsPerWeek.toString());
+  const [useCustomMacros, setUseCustomMacros] = useState(goal.useCustomMacros);
+  
   const [calories, setCalories] = useState(goals.calories.toString());
   const [protein, setProtein] = useState(goals.protein.toString());
   const [carbs, setCarbs] = useState(goals.carbs.toString());
@@ -35,7 +39,6 @@ export default function ProfileScreen() {
   const [heightInches, setHeightInches] = useState((profile.height % 12).toString());
   const [age, setAge] = useState(profile.age.toString());
   const [isMale, setIsMale] = useState(profile.isMale);
-  const { goal, updateWeightGoal } = useWeightTracker();
   const [activityLevel, setActivityLevel] = useState<"sedentary" | "light" | "moderate" | "active" | "very_active">(goal.activityLevel);
   const [goalWeight, setGoalWeight] = useState(
     goal.targetWeight && goal.targetWeight > 0
@@ -50,11 +53,41 @@ export default function ProfileScreen() {
     return Math.round(currentWeight * 0.5);
   }, [stats.currentWeight]);
 
+  const recommendedMacros = useMemo(() => {
+    if (!stats.currentWeight || stats.currentWeight === 0) {
+      return { calories: 2000, protein: 150, carbs: 200, fat: 65 };
+    }
+    const heightFeetNum = parseInt(heightFeet);
+    const heightInchesNum = parseInt(heightInches);
+    const heightNum = (heightFeetNum || 5) * 12 + (heightInchesNum || 10);
+    const ageNum = parseInt(age) || 30;
+    const poundsNum = parseFloat(poundsPerWeek) || 0;
+    
+    return calculateRecommendedMacros(
+      stats.currentWeight,
+      heightNum,
+      ageNum,
+      isMale,
+      activityLevel,
+      goalType,
+      poundsNum
+    );
+  }, [stats.currentWeight, heightFeet, heightInches, age, isMale, activityLevel, goalType, poundsPerWeek]);
+
   useEffect(() => {
     if (useAutoWaterGoal) {
       setWater(calculatedWaterGoal.toString());
     }
   }, [useAutoWaterGoal, calculatedWaterGoal]);
+
+  useEffect(() => {
+    if (!useCustomMacros) {
+      setCalories(recommendedMacros.calories.toString());
+      setProtein(recommendedMacros.protein.toString());
+      setCarbs(recommendedMacros.carbs.toString());
+      setFat(recommendedMacros.fat.toString());
+    }
+  }, [useCustomMacros, recommendedMacros]);
 
   const handleSave = () => {
     const heightFeetNum = parseInt(heightFeet);
@@ -88,13 +121,27 @@ export default function ProfileScreen() {
 
     const targetWeightNum = parseFloat(goalWeight);
     if (!isNaN(targetWeightNum) && targetWeightNum > 0) {
-      updateWeightGoal({
-        activityLevel,
-        targetWeight: targetWeightNum,
-      });
+      const poundsNum = parseFloat(poundsPerWeek);
+      if (!isNaN(poundsNum) && poundsNum >= 0) {
+        updateWeightGoal({
+          activityLevel,
+          targetWeight: targetWeightNum,
+          goalType,
+          poundsPerWeek: poundsNum,
+          useCustomMacros,
+        });
+      } else {
+        updateWeightGoal({
+          activityLevel,
+          goalType,
+          useCustomMacros,
+        });
+      }
     } else {
       updateWeightGoal({
         activityLevel,
+        goalType,
+        useCustomMacros,
       });
     }
 
@@ -291,58 +338,168 @@ export default function ProfileScreen() {
           <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
             <View style={styles.cardHeader}>
               <Target color={colors.primary} size={24} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>Daily Goals</Text>
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Weight Goal</Text>
+            </View>
+
+            <View style={styles.formGroup}>
+              <Text style={[styles.formLabel, { color: colors.text }]}>Goal Type</Text>
+              <View style={styles.goalTypeOptions}>
+                <TouchableOpacity
+                  style={[
+                    styles.goalTypeOption,
+                    { backgroundColor: goalType === "lose" ? colors.primary : colors.surface, borderColor: goalType === "lose" ? colors.primary : colors.border },
+                  ]}
+                  onPress={() => setGoalType("lose")}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.goalTypeText, { color: goalType === "lose" ? "#FFFFFF" : colors.text }]}>Lose</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.goalTypeOption,
+                    { backgroundColor: goalType === "maintain" ? colors.primary : colors.surface, borderColor: goalType === "maintain" ? colors.primary : colors.border },
+                  ]}
+                  onPress={() => setGoalType("maintain")}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.goalTypeText, { color: goalType === "maintain" ? "#FFFFFF" : colors.text }]}>Maintain</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[
+                    styles.goalTypeOption,
+                    { backgroundColor: goalType === "gain" ? colors.primary : colors.surface, borderColor: goalType === "gain" ? colors.primary : colors.border },
+                  ]}
+                  onPress={() => setGoalType("gain")}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.goalTypeText, { color: goalType === "gain" ? "#FFFFFF" : colors.text }]}>Gain</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {goalType !== "maintain" && (
+              <View style={styles.formGroup}>
+                <Text style={[styles.formLabel, { color: colors.text }]}>Pounds per Week</Text>
+                <Text style={[styles.formHelperText, { color: colors.textSecondary }]}>
+                  {goalType === "lose" ? "Recommended: 0.5-2 lbs/week" : "Recommended: 0.25-1 lb/week"}
+                </Text>
+                <TextInput
+                  style={[styles.formInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                  placeholderTextColor={colors.textTertiary}
+                  value={poundsPerWeek}
+                  onChangeText={setPoundsPerWeek}
+                  keyboardType="decimal-pad"
+                  placeholder={goalType === "lose" ? "1.0" : "0.5"}
+                  returnKeyType="next"
+                />
+              </View>
+            )}
+          </View>
+
+          <View style={[styles.card, { backgroundColor: colors.card, shadowColor: colors.shadow }]}>
+            <View style={styles.cardHeader}>
+              <Target color={colors.primary} size={24} />
+              <Text style={[styles.cardTitle, { color: colors.text }]}>Daily Nutrition Goals</Text>
+            </View>
+
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleLabel}>
+                <Text style={[styles.formLabel, { color: colors.text, marginBottom: 4 }]}>Auto Calculate Macros</Text>
+                <Text style={[styles.toggleDescription, { color: colors.textSecondary }]}>
+                  {!useCustomMacros 
+                    ? `Based on your weight goal (${recommendedMacros.calories} cal)`
+                    : "Set your own custom macro targets"}
+                </Text>
+              </View>
+              <Switch
+                value={!useCustomMacros}
+                onValueChange={(value) => setUseCustomMacros(!value)}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor="#FFFFFF"
+              />
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text }]}>Calories</Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                style={[
+                  styles.formInput, 
+                  { 
+                    backgroundColor: !useCustomMacros ? colors.borderLight : colors.surface, 
+                    color: !useCustomMacros ? colors.textTertiary : colors.text, 
+                    borderColor: colors.border 
+                  }
+                ]}
                 placeholderTextColor={colors.textTertiary}
                 value={calories}
                 onChangeText={setCalories}
                 keyboardType="numeric"
                 placeholder="2000"
                 returnKeyType="next"
+                editable={useCustomMacros}
               />
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text }]}>Protein (g)</Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                style={[
+                  styles.formInput, 
+                  { 
+                    backgroundColor: !useCustomMacros ? colors.borderLight : colors.surface, 
+                    color: !useCustomMacros ? colors.textTertiary : colors.text, 
+                    borderColor: colors.border 
+                  }
+                ]}
                 placeholderTextColor={colors.textTertiary}
                 value={protein}
                 onChangeText={setProtein}
                 keyboardType="numeric"
                 placeholder="150"
                 returnKeyType="next"
+                editable={useCustomMacros}
               />
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text }]}>Carbs (g)</Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                style={[
+                  styles.formInput, 
+                  { 
+                    backgroundColor: !useCustomMacros ? colors.borderLight : colors.surface, 
+                    color: !useCustomMacros ? colors.textTertiary : colors.text, 
+                    borderColor: colors.border 
+                  }
+                ]}
                 placeholderTextColor={colors.textTertiary}
                 value={carbs}
                 onChangeText={setCarbs}
                 keyboardType="numeric"
                 placeholder="200"
                 returnKeyType="next"
+                editable={useCustomMacros}
               />
             </View>
 
             <View style={styles.formGroup}>
               <Text style={[styles.formLabel, { color: colors.text }]}>Fat (g)</Text>
               <TextInput
-                style={[styles.formInput, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                style={[
+                  styles.formInput, 
+                  { 
+                    backgroundColor: !useCustomMacros ? colors.borderLight : colors.surface, 
+                    color: !useCustomMacros ? colors.textTertiary : colors.text, 
+                    borderColor: colors.border 
+                  }
+                ]}
                 placeholderTextColor={colors.textTertiary}
                 value={fat}
                 onChangeText={setFat}
                 keyboardType="numeric"
                 placeholder="65"
                 returnKeyType="next"
+                editable={useCustomMacros}
               />
             </View>
 
@@ -428,6 +585,7 @@ const styles = StyleSheet.create({
   card: {
     padding: 20,
     borderRadius: 20,
+    marginBottom: 16,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -575,5 +733,21 @@ const styles = StyleSheet.create({
   formHelperText: {
     fontSize: 12,
     marginBottom: 6,
+  },
+  goalTypeOptions: {
+    flexDirection: "row" as const,
+    gap: 12,
+  },
+  goalTypeOption: {
+    flex: 1,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: "center",
+  },
+  goalTypeText: {
+    fontSize: 15,
+    fontWeight: "600" as const,
   },
 });

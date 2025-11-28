@@ -11,6 +11,8 @@ export interface WeightGoal {
   startDate: string;
   goalType: "lose" | "gain" | "maintain";
   activityLevel: "sedentary" | "light" | "moderate" | "active" | "very_active";
+  poundsPerWeek: number;
+  useCustomMacros: boolean;
 }
 
 export interface WeightStats {

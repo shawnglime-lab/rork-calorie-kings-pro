@@ -10,6 +10,8 @@ const DEFAULT_WEIGHT_GOAL: WeightGoal = {
   startDate: new Date().toISOString().split("T")[0],
   goalType: "maintain",
   activityLevel: "moderate",
+  poundsPerWeek: 0,
+  useCustomMacros: false,
 };
 
 function calculateBMR(weight: number, height: number = 70, age: number = 30, isMale: boolean = true): number {
@@ -63,6 +65,50 @@ function calculateTrendWeight(entries: WeightEntry[]): number {
   return intercept + slope * (n - 1);
 }
 
+export function calculateRecommendedMacros(
+  currentWeight: number,
+  height: number,
+  age: number,
+  isMale: boolean,
+  activityLevel: WeightGoal["activityLevel"],
+  goalType: WeightGoal["goalType"],
+  poundsPerWeek: number
+): { calories: number; protein: number; carbs: number; fat: number } {
+  const bmr = calculateBMR(currentWeight, height, age, isMale);
+  const tdee = calculateTDEE(bmr, activityLevel);
+  
+  const caloriesPerPound = 3500;
+  const weeklyCalorieChange = poundsPerWeek * caloriesPerPound;
+  const dailyCalorieChange = weeklyCalorieChange / 7;
+  
+  let targetCalories = tdee;
+  if (goalType === "lose") {
+    targetCalories = tdee - dailyCalorieChange;
+  } else if (goalType === "gain") {
+    targetCalories = tdee + dailyCalorieChange;
+  }
+  
+  targetCalories = Math.round(Math.max(1200, targetCalories));
+  
+  const proteinGramsPerPound = 0.8;
+  const protein = Math.round(currentWeight * proteinGramsPerPound);
+  
+  const proteinCalories = protein * 4;
+  const fatPercentage = 0.25;
+  const fatCalories = targetCalories * fatPercentage;
+  const fat = Math.round(fatCalories / 9);
+  
+  const carbCalories = targetCalories - proteinCalories - fatCalories;
+  const carbs = Math.round(carbCalories / 4);
+  
+  return {
+    calories: targetCalories,
+    protein,
+    carbs: Math.max(0, carbs),
+    fat,
+  };
+}
+
 export const [WeightContext, useWeightTracker] = createContextHook(() => {
   const queryClient = useQueryClient();
 
@@ -91,7 +137,15 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
         if (!stored || stored === "undefined" || stored === "null") return DEFAULT_WEIGHT_GOAL;
         const parsed = JSON.parse(stored);
         if (typeof parsed !== "object" || parsed === null) return DEFAULT_WEIGHT_GOAL;
-        return parsed;
+        
+        const migratedGoal = {
+          ...DEFAULT_WEIGHT_GOAL,
+          ...parsed,
+          poundsPerWeek: parsed.poundsPerWeek ?? (parsed.goalType === "lose" ? 1 : parsed.goalType === "gain" ? 0.5 : 0),
+          useCustomMacros: parsed.useCustomMacros ?? false,
+        };
+        
+        return migratedGoal;
       } catch (error) {
         console.error("Error loading weight goal:", error);
         await AsyncStorage.removeItem("weightGoal");
