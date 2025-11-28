@@ -1190,9 +1190,9 @@ const styles = StyleSheet.create({
   heroCard: {
     marginHorizontal: wp(4),
     marginBottom: 0,
-    marginTop: scale(-52),
+    marginTop: scale(-68),
     padding: wp(5),
-    paddingTop: wp(6.5),
+    paddingTop: wp(9),
     paddingBottom: wp(5),
     borderRadius: moderateScale(20),
     shadowOffset: { width: 0, height: 4 },
