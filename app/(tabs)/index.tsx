@@ -1166,7 +1166,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     alignItems: "center" as const,
     gap: scale(8),
-    marginTop: scale(-20),
+    marginTop: scale(-10),
     zIndex: 10,
   },
   logoImage: {
