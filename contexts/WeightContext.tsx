@@ -287,11 +287,18 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
     const targetWeight = goal.targetWeight || 0;
     
     const currentBmr = calculateBMR(currentWeight, profile.height, profile.age, profile.isMale);
-    const currentTdee = calculateTDEE(currentBmr, goal.activityLevel);
-    const currentDeficitOrSurplus = dailyCalories - currentTdee;
+    const activityMultiplier = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9,
+    }[goal.activityLevel];
+    const currentTdee = currentBmr * activityMultiplier;
+    const dailyDeficit = currentTdee - dailyCalories;
 
     const caloriesPerPound = 3500;
-    const expectedWeeklyChange = (currentDeficitOrSurplus * 7) / caloriesPerPound;
+    const weeklyLossLBS = (dailyDeficit * 7) / caloriesPerPound;
 
     let estimatedWeeksToGoal = 0;
     const weightDifference = targetWeight - currentWeight;
@@ -300,14 +307,17 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
     console.log('[Forecast] Target weight:', targetWeight);
     console.log('[Forecast] Weight difference:', weightDifference);
     console.log('[Forecast] Daily calories:', dailyCalories);
+    console.log('[Forecast] Current BMR:', currentBmr);
+    console.log('[Forecast] Activity multiplier:', activityMultiplier);
     console.log('[Forecast] Current TDEE:', currentTdee);
-    console.log('[Forecast] Expected weekly change:', expectedWeeklyChange);
+    console.log('[Forecast] Daily deficit:', dailyDeficit);
+    console.log('[Forecast] Weekly loss (lbs):', weeklyLossLBS);
     
     if (currentWeight === 0 || targetWeight === 0) {
       estimatedWeeksToGoal = 0;
     } else if (Math.abs(weightDifference) < 0.1) {
       estimatedWeeksToGoal = 0;
-    } else if (Math.abs(expectedWeeklyChange) < 0.01) {
+    } else if (Math.abs(weeklyLossLBS) < 0.01) {
       estimatedWeeksToGoal = Number.POSITIVE_INFINITY;
     } else {
       let simulatedWeight = currentWeight;
@@ -319,11 +329,11 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
       
       while (weeks < maxWeeks) {
         const weekBmr = calculateBMR(simulatedWeight, profile.height, profile.age, profile.isMale);
-        const weekTdee = calculateTDEE(weekBmr, goal.activityLevel);
-        const weekDeficit = dailyCalories - weekTdee;
-        const weekWeightChange = (weekDeficit * 7) / caloriesPerPound;
+        const weekTdee = weekBmr * activityMultiplier;
+        const weekDailyDeficit = weekTdee - dailyCalories;
+        const weeklyWeightChange = (weekDailyDeficit * 7) / caloriesPerPound;
         
-        simulatedWeight += weekWeightChange;
+        simulatedWeight -= weeklyWeightChange;
         weeks++;
         
         if (isLosingWeight) {
@@ -359,23 +369,23 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
 
     let status: ForecastData["status"] = "maintaining";
     if (goal.goalType === "lose") {
-      if (expectedWeeklyChange <= -0.5 && expectedWeeklyChange >= -2) status = "on_track";
-      else if (expectedWeeklyChange < -2) status = "ahead";
-      else if (expectedWeeklyChange > -0.5) status = "behind";
+      if (weeklyLossLBS >= 0.5 && weeklyLossLBS <= 2) status = "on_track";
+      else if (weeklyLossLBS > 2) status = "ahead";
+      else if (weeklyLossLBS < 0.5) status = "behind";
     } else if (goal.goalType === "gain") {
-      if (expectedWeeklyChange >= 0.5 && expectedWeeklyChange <= 2) status = "on_track";
-      else if (expectedWeeklyChange > 2) status = "ahead";
-      else if (expectedWeeklyChange < 0.5) status = "behind";
+      if (weeklyLossLBS <= -0.5 && weeklyLossLBS >= -2) status = "on_track";
+      else if (weeklyLossLBS < -2) status = "ahead";
+      else if (weeklyLossLBS > -0.5) status = "behind";
     } else {
-      if (Math.abs(expectedWeeklyChange) <= 0.2) status = "on_track";
-      else if (Math.abs(expectedWeeklyChange) <= 0.5) status = "behind";
+      if (Math.abs(weeklyLossLBS) <= 0.2) status = "on_track";
+      else if (Math.abs(weeklyLossLBS) <= 0.5) status = "behind";
     }
 
     return {
       estimatedWeeksToGoal: Number.isFinite(estimatedWeeksToGoal) && estimatedWeeksToGoal > 0 ? estimatedWeeksToGoal : 0,
       estimatedGoalDate,
-      currentDeficitOrSurplus,
-      expectedWeeklyChange,
+      currentDeficitOrSurplus: dailyDeficit,
+      expectedWeeklyChange: -weeklyLossLBS,
       status,
       projectedDailyCalories: dailyCalories,
       bmr: currentBmr,
