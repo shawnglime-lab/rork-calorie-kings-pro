@@ -1170,8 +1170,8 @@ const styles = StyleSheet.create({
     zIndex: 10,
   },
   logoImage: {
-    width: wp(90),
-    height: hp(10),
+    width: wp(95),
+    height: hp(12),
     zIndex: 10,
   },
   dateText: {
@@ -1189,14 +1189,16 @@ const styles = StyleSheet.create({
   heroCard: {
     marginHorizontal: wp(4),
     marginBottom: 0,
-    marginTop: scale(-55),
+    marginTop: scale(-65),
     padding: wp(5),
-    paddingBottom: wp(4),
-    borderRadius: moderateScale(16),
+    paddingTop: wp(6.5),
+    paddingBottom: wp(5),
+    borderRadius: moderateScale(20),
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
     elevation: 4,
+    minHeight: hp(32),
   },
   semiCircleContainer: {
     position: "relative",
