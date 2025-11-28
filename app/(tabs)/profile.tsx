@@ -572,4 +572,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500" as const,
   },
+  formHelperText: {
+    fontSize: 12,
+    marginBottom: 6,
+  },
 });

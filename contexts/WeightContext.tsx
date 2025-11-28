@@ -229,21 +229,56 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
   }, [entries, goal]);
 
   const forecast = useCallback((dailyCalories: number): ForecastData => {
-    const bmr = calculateBMR(stats.currentWeight, profile.height, profile.age, profile.isMale);
-    const tdee = calculateTDEE(bmr, goal.activityLevel);
-    const currentDeficitOrSurplus = dailyCalories - tdee;
+    const currentBmr = calculateBMR(stats.currentWeight, profile.height, profile.age, profile.isMale);
+    const currentTdee = calculateTDEE(currentBmr, goal.activityLevel);
+    const currentDeficitOrSurplus = dailyCalories - currentTdee;
 
     const caloriesPerPound = 3500;
     const expectedWeeklyChange = (currentDeficitOrSurplus * 7) / caloriesPerPound;
 
+    let estimatedWeeksToGoal = 0;
     const weightDifference = goal.targetWeight - stats.currentWeight;
-    const rawWeeksToGoal = expectedWeeklyChange === 0 ? Number.POSITIVE_INFINITY : weightDifference / expectedWeeklyChange;
-    const positiveWeeksToGoal = rawWeeksToGoal > 0 ? rawWeeksToGoal : Number.POSITIVE_INFINITY;
-    const estimatedWeeksToGoal = Number.isFinite(positiveWeeksToGoal) ? positiveWeeksToGoal : 0;
+    
+    if (Math.abs(weightDifference) < 0.1) {
+      estimatedWeeksToGoal = 0;
+    } else if (expectedWeeklyChange === 0) {
+      estimatedWeeksToGoal = Number.POSITIVE_INFINITY;
+    } else {
+      let simulatedWeight = stats.currentWeight;
+      let weeks = 0;
+      const maxWeeks = 520;
+      const isLosingWeight = weightDifference < 0;
+      
+      while (weeks < maxWeeks) {
+        const weekBmr = calculateBMR(simulatedWeight, profile.height, profile.age, profile.isMale);
+        const weekTdee = calculateTDEE(weekBmr, goal.activityLevel);
+        const weekDeficit = dailyCalories - weekTdee;
+        const weekWeightChange = (weekDeficit * 7) / caloriesPerPound;
+        
+        simulatedWeight += weekWeightChange;
+        weeks++;
+        
+        if (isLosingWeight) {
+          if (simulatedWeight <= goal.targetWeight) {
+            estimatedWeeksToGoal = weeks;
+            break;
+          }
+        } else {
+          if (simulatedWeight >= goal.targetWeight) {
+            estimatedWeeksToGoal = weeks;
+            break;
+          }
+        }
+      }
+      
+      if (weeks >= maxWeeks) {
+        estimatedWeeksToGoal = Number.POSITIVE_INFINITY;
+      }
+    }
 
     const today = new Date();
-    const goalDate = Number.isFinite(positiveWeeksToGoal)
-      ? new Date(today.getTime() + positiveWeeksToGoal * 7 * 24 * 60 * 60 * 1000)
+    const goalDate = Number.isFinite(estimatedWeeksToGoal) && estimatedWeeksToGoal > 0
+      ? new Date(today.getTime() + estimatedWeeksToGoal * 7 * 24 * 60 * 60 * 1000)
       : today;
     const estimatedGoalDate = goalDate.toISOString().split("T")[0];
 
@@ -262,14 +297,14 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
     }
 
     return {
-      estimatedWeeksToGoal,
+      estimatedWeeksToGoal: Number.isFinite(estimatedWeeksToGoal) && estimatedWeeksToGoal > 0 ? estimatedWeeksToGoal : 0,
       estimatedGoalDate,
       currentDeficitOrSurplus,
       expectedWeeklyChange,
       status,
       projectedDailyCalories: dailyCalories,
-      bmr,
-      tdee,
+      bmr: currentBmr,
+      tdee: currentTdee,
     };
   }, [stats, goal, profile]);
 
