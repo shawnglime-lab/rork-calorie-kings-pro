@@ -506,18 +506,20 @@ export default function HomeScreen() {
   return (
     <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
+        <View style={styles.header}>
+          <Image
+            source={{
+              uri: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0ge9n2w41sbvz03g1ce8k"
+            }}
+            style={styles.logoImage}
+            contentFit="contain"
+          />
+        </View>
+
         <ExpoLinearGradient
           colors={theme.resolvedTheme === "dark" ? ["#101321", "#060814"] : ["#FFFFFF", "#F5F7FF"]}
           style={[styles.heroCard, { shadowColor: colors.shadow }]}
         >
-          <View style={styles.headerInCard}>
-            <Image
-              source={require("@/assets/images/icon.png")}
-              style={styles.logoImage}
-              contentFit="contain"
-            />
-          </View>
-
           <Text style={[styles.heroDateText, { color: colors.textSecondary }]}>
             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </Text>
@@ -1159,17 +1161,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  headerInCard: {
-    alignItems: "center" as const,
-    paddingTop: scale(9),
+  header: {
+    paddingHorizontal: wp(5),
     paddingBottom: 0,
+    alignItems: "center" as const,
+    gap: scale(8),
+    marginTop: scale(-30),
   },
   logoImage: {
-    width: wp(60),
-    height: hp(6),
-    resizeMode: "contain" as const,
-    alignSelf: "center" as const,
-    marginBottom: 0,
+    width: wp(90),
+    height: hp(10),
   },
   dateText: {
     fontSize: 13,
@@ -1186,7 +1187,7 @@ const styles = StyleSheet.create({
   heroCard: {
     marginHorizontal: wp(4),
     marginBottom: 0,
-    marginTop: hp(1),
+    marginTop: scale(-55),
     padding: wp(5),
     paddingBottom: wp(4),
     borderRadius: moderateScale(16),
