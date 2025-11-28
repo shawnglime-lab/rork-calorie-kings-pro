@@ -512,9 +512,7 @@ export default function HomeScreen() {
         >
           <View style={styles.headerInCard}>
             <Image
-              source={{
-                uri: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0ge9n2w41sbvz03g1ce8k"
-              }}
+              source={require("@/assets/images/icon.png")}
               style={styles.logoImage}
               contentFit="contain"
             />
@@ -1163,14 +1161,15 @@ const styles = StyleSheet.create({
   },
   headerInCard: {
     alignItems: "center" as const,
-    paddingTop: scale(8),
+    paddingTop: scale(9),
     paddingBottom: 0,
   },
   logoImage: {
-    height: scale(40),
+    width: wp(50),
+    height: scale(50),
     resizeMode: "contain" as const,
     alignSelf: "center" as const,
-    marginBottom: scale(4),
+    marginBottom: scale(12),
   },
   dateText: {
     fontSize: 13,
