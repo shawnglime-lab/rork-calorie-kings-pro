@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo, useCallback } from "react";
+import React, { useState, useRef, useMemo, useCallback, useEffect } from "react";
 import {
   View,
   Text,
@@ -23,7 +23,7 @@ import { useCalorieTracker } from "@/contexts/CalorieContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useFasting } from "@/contexts/FastingContext";
 import { useSettings } from "@/contexts/SettingsContext";
-import { useState as useRNState, useEffect as useRNEffect } from "react";
+
 import { LinearGradient as ExpoLinearGradient } from "expo-linear-gradient";
 import { Image } from "expo-image";
 import { Pedometer } from "expo-sensors";
@@ -214,9 +214,9 @@ export default function HomeScreen() {
   const undoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pedometerBaselineRef = useRef<number>(0);
   const androidStepOffsetRef = useRef<number>(0);
-  const [stepSource, setStepSource] = useRNState<"pedometer" | "demo">("demo");
-  const [stepStatus, setStepStatus] = useRNState<"checking" | "ready" | "denied" | "unsupported">("checking");
-  const [steps, setSteps] = useRNState<number>(0);
+  const [stepSource, setStepSource] = useState<"pedometer" | "demo">("demo");
+  const [stepStatus, setStepStatus] = useState<"checking" | "ready" | "denied" | "unsupported">("checking");
+  const [steps, setSteps] = useState<number>(0);
   const stepsGoal = settings.stepGoal;
   const [selectedFood, setSelectedFood] = useState<{ id: string; name: string; servingAmount: number; servingSize: string; calories: number; protein: number; carbs: number; fat: number; timestamp?: number; source?: "database" | "ai" | "user" | "fast-food" | "barcode"; brand?: string; barcode?: string; confidence?: number } | null>(null);
   const [editServingAmount, setEditServingAmount] = useState("");
@@ -398,7 +398,7 @@ export default function HomeScreen() {
     };
   }, []);
 
-  useRNEffect(() => {
+  useEffect(() => {
     let isMounted = true;
     let subscription: ReturnType<typeof Pedometer.watchStepCount> | null = null;
 
@@ -483,7 +483,7 @@ export default function HomeScreen() {
     };
   }, []);
 
-  useRNEffect(() => {
+  useEffect(() => {
     if (stepSource !== "demo") {
       return;
     }
