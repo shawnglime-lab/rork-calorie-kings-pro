@@ -147,6 +147,16 @@ export const [FastingContext, useFasting] = createContextHook(() => {
     mutateUpdateFasting(newData);
   }, [fastingData, mutateUpdateFasting]);
 
+  const updateFast = useCallback((fastId: string, updates: Partial<Fast>) => {
+    const newData: FastingData = {
+      ...fastingData,
+      history: fastingData.history.map((fast: Fast) => 
+        fast.id === fastId ? { ...fast, ...updates } : fast
+      ),
+    };
+    mutateUpdateFasting(newData);
+  }, [fastingData, mutateUpdateFasting]);
+
   const clearLastFast = useCallback(() => {
     const newData: FastingData = {
       ...fastingData,
@@ -191,6 +201,7 @@ export const [FastingContext, useFasting] = createContextHook(() => {
       formatDuration,
       getCompletedFastDuration,
       deleteFast,
+      updateFast,
       clearLastFast,
       isLastFastFromToday,
       isLoading: fastingQuery.isLoading,
@@ -205,6 +216,7 @@ export const [FastingContext, useFasting] = createContextHook(() => {
       formatDuration,
       getCompletedFastDuration,
       deleteFast,
+      updateFast,
       clearLastFast,
       isLastFastFromToday,
       fastingQuery.isLoading,
