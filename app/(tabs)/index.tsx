@@ -506,20 +506,20 @@ export default function HomeScreen() {
   return (
     <View style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <View style={[styles.container, { backgroundColor: colors.background, paddingTop: insets.top }]}>
-        <View style={styles.header}>
-          <Image
-            source={{
-              uri: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0ge9n2w41sbvz03g1ce8k"
-            }}
-            style={styles.logoImage}
-            contentFit="contain"
-          />
-        </View>
-
         <ExpoLinearGradient
           colors={theme.resolvedTheme === "dark" ? ["#101321", "#060814"] : ["#FFFFFF", "#F5F7FF"]}
           style={[styles.heroCard, { shadowColor: colors.shadow }]}
         >
+          <View style={styles.headerInCard}>
+            <Image
+              source={{
+                uri: "https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0ge9n2w41sbvz03g1ce8k"
+              }}
+              style={styles.logoImage}
+              contentFit="contain"
+            />
+          </View>
+
           <Text style={[styles.heroDateText, { color: colors.textSecondary }]}>
             {new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
           </Text>
@@ -1161,10 +1161,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  header: {
-    paddingHorizontal: wp(5),
-    paddingVertical: hp(0.5),
+  headerInCard: {
     alignItems: "center" as const,
+    paddingTop: hp(2),
+    marginBottom: hp(1),
   },
   logoImage: {
     width: wp(60),
