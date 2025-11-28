@@ -141,7 +141,7 @@ export const [WeightContext, useWeightTracker] = createContextHook(() => {
         const migratedGoal = {
           ...DEFAULT_WEIGHT_GOAL,
           ...parsed,
-          poundsPerWeek: parsed.poundsPerWeek ?? (parsed.goalType === "lose" ? 1 : parsed.goalType === "gain" ? 0.5 : 0),
+          poundsPerWeek: parsed.poundsPerWeek ?? (parsed.goalType === "lose" ? 1 : (parsed.goalType === "gain" ? 0.5 : 0)),
           useCustomMacros: parsed.useCustomMacros ?? false,
         };
         
