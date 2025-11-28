@@ -928,6 +928,7 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
+                          console.log("[DatePicker] Edit calendar button pressed");
                           setDatePickerType("edit");
                           setShowDatePicker(true);
                         }}
@@ -935,6 +936,7 @@ export default function WeightScreen() {
                         accessibilityLabel="Open calendar"
                         testID="open-edit-date-picker"
                         activeOpacity={0.7}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <CalendarDays color={colors.primary} size={20} />
                       </TouchableOpacity>
@@ -1034,6 +1036,7 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
+                          console.log("[DatePicker] Start calendar button pressed");
                           setDatePickerType("start");
                           setShowDatePicker(true);
                         }}
@@ -1041,6 +1044,7 @@ export default function WeightScreen() {
                         accessibilityLabel="Open calendar"
                         testID="open-start-date-picker"
                         activeOpacity={0.7}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                       >
                         <CalendarDays color={colors.primary} size={20} />
                       </TouchableOpacity>
@@ -1482,6 +1486,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 10,
   },
   inputHelp: {
     fontSize: 13,
