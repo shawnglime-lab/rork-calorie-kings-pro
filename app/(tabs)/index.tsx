@@ -15,6 +15,7 @@ import {
   ScrollView,
   Alert,
 } from "react-native";
+import { wp, hp, scale, moderateScale, getResponsiveFontSize } from "@/utils/responsive";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Droplets, Flame, Plus, X, Trash2, Clock, Play, StopCircle, Footprints, Info, Edit3, ChevronRight } from "lucide-react-native";
 import { router } from "expo-router";
@@ -1161,15 +1162,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: wp(5),
     paddingBottom: 0,
     alignItems: "center" as const,
-    gap: 8,
-    marginTop: -30,
+    gap: scale(8),
+    marginTop: scale(-30),
   },
   logoImage: {
-    width: 540,
-    height: 160,
+    width: wp(90),
+    height: hp(10),
   },
   dateText: {
     fontSize: 13,
@@ -1184,12 +1185,12 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   heroCard: {
-    marginHorizontal: 16,
+    marginHorizontal: wp(4),
     marginBottom: 0,
-    marginTop: -55,
-    padding: 20,
-    paddingBottom: 16,
-    borderRadius: 16,
+    marginTop: scale(-55),
+    padding: wp(5),
+    paddingBottom: wp(4),
+    borderRadius: moderateScale(16),
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -1225,31 +1226,31 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   caloriesValue: {
-    fontSize: 36,
+    fontSize: getResponsiveFontSize(36),
     fontWeight: "700" as const,
   },
   caloriesLabel: {
-    fontSize: 13,
-    marginTop: 2,
+    fontSize: getResponsiveFontSize(13),
+    marginTop: scale(2),
   },
   caloriesRemaining: {
-    fontSize: 12,
-    marginTop: 4,
+    fontSize: getResponsiveFontSize(12),
+    marginTop: scale(4),
   },
   macroChips: {
     flexDirection: "row",
-    gap: 8,
-    marginTop: 16,
+    gap: wp(2),
+    marginTop: scale(16),
     width: "100%",
   },
   macroChip: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 999,
-    gap: 6,
+    paddingHorizontal: wp(2.5),
+    paddingVertical: hp(1),
+    borderRadius: moderateScale(999),
+    gap: scale(6),
   },
   macroDot: {
     width: 6,
@@ -1257,7 +1258,7 @@ const styles = StyleSheet.create({
     borderRadius: 3,
   },
   macroChipLabel: {
-    fontSize: 11,
+    fontSize: getResponsiveFontSize(11),
     fontWeight: "600" as const,
     flex: 1,
   },
@@ -1273,14 +1274,14 @@ const styles = StyleSheet.create({
   },
   compactRow: {
     flexDirection: "row",
-    marginHorizontal: 16,
-    marginBottom: 10,
-    gap: 10,
+    marginHorizontal: wp(4),
+    marginBottom: hp(1.2),
+    gap: wp(2.5),
   },
   compactCard: {
     flex: 1,
-    padding: 12,
-    borderRadius: 12,
+    padding: wp(3),
+    borderRadius: moderateScale(12),
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -1367,10 +1368,10 @@ const styles = StyleSheet.create({
     fontVariant: ["tabular-nums"],
   },
   waterCard: {
-    marginHorizontal: 16,
-    marginBottom: 10,
-    padding: 14,
-    borderRadius: 12,
+    marginHorizontal: wp(4),
+    marginBottom: hp(1.2),
+    padding: wp(3.5),
+    borderRadius: moderateScale(12),
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
@@ -1440,18 +1441,18 @@ const styles = StyleSheet.create({
     fontWeight: "600" as const,
   },
   recentCard: {
-    marginHorizontal: 16,
-    marginBottom: 10,
-    padding: 14,
-    borderRadius: 12,
+    marginHorizontal: wp(4),
+    marginBottom: hp(1.2),
+    padding: wp(3.5),
+    borderRadius: moderateScale(12),
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 8,
     elevation: 2,
-    maxHeight: 300,
+    maxHeight: hp(35),
   },
   foodListScroll: {
-    maxHeight: 220,
+    maxHeight: hp(27),
   },
   recentHeader: {
     flexDirection: "row",
@@ -1556,7 +1557,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   modalTitle: {
-    fontSize: 24,
+    fontSize: getResponsiveFontSize(24),
     fontWeight: "700" as const,
   },
   modalBody: {
@@ -1568,9 +1569,9 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
+    borderRadius: moderateScale(12),
+    padding: wp(4),
+    fontSize: getResponsiveFontSize(16),
     borderWidth: 1,
   },
   modalButton: {
