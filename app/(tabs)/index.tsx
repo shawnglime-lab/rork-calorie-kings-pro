@@ -1166,7 +1166,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
     alignItems: "center" as const,
     gap: scale(8),
-    marginTop: scale(-10),
+    marginTop: scale(2),
     zIndex: 10,
   },
   logoImage: {
@@ -1189,7 +1189,7 @@ const styles = StyleSheet.create({
   heroCard: {
     marginHorizontal: wp(4),
     marginBottom: 0,
-    marginTop: scale(-65),
+    marginTop: scale(-52),
     padding: wp(5),
     paddingTop: wp(6.5),
     paddingBottom: wp(5),
