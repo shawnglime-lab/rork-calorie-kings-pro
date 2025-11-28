@@ -907,8 +907,11 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
-                          setDatePickerType("edit");
-                          setShowDatePicker(true);
+                          Keyboard.dismiss();
+                          setTimeout(() => {
+                            setDatePickerType("edit");
+                            setShowDatePicker(true);
+                          }, 100);
                         }}
                         accessibilityRole="button"
                         accessibilityLabel="Open calendar"
@@ -1013,8 +1016,11 @@ export default function WeightScreen() {
                       <TouchableOpacity
                         style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
                         onPress={() => {
-                          setDatePickerType("start");
-                          setShowDatePicker(true);
+                          Keyboard.dismiss();
+                          setTimeout(() => {
+                            setDatePickerType("start");
+                            setShowDatePicker(true);
+                          }, 100);
                         }}
                         accessibilityRole="button"
                         accessibilityLabel="Open calendar"
