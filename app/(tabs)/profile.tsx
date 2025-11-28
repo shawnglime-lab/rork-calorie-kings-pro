@@ -490,7 +490,7 @@ export default function ProfileScreen() {
                   style={[styles.readOnlyText, { color: colors.text }]}
                 >
                   {stats.currentWeight > 0
-                    ? ${stats.currentWeight.toFixed(1)} lbs
+                    ? `${stats.currentWeight.toFixed(1)} lbs`
                     : "Not set - Add in Weight tab"}
                 </Text>
               </View>
@@ -1280,7 +1280,7 @@ export default function ProfileScreen() {
                     ]}
                   >
                     {useAutoWaterGoal
-                      ? Based on your weight (${stats.currentWeight || 150} lbs = ${calculatedWaterGoal} oz)
+                      ? `Based on your weight (${stats.currentWeight || 150} lbs = ${calculatedWaterGoal} oz)`
                       : "Set a custom daily water target"}
                   </Text>
                 </View>
