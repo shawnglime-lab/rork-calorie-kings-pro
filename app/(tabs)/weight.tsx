@@ -912,35 +912,18 @@ export default function WeightScreen() {
                     />
 
                     <Text style={[styles.inputLabel, { color: colors.text }]}>Date (MM/DD/YYYY)</Text>
-                    <View style={styles.dateInputRow}>
-                      <TextInput
-                        style={[styles.input, { flex: 1, backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
-                        placeholderTextColor={colors.textTertiary}
-                        value={editDate}
-                        onChangeText={(text) => setEditDate(formatDateInput(text))}
-                        keyboardType="number-pad"
-                        placeholder="MM/DD/YYYY"
-                        maxLength={10}
-                        returnKeyType="done"
-                        onSubmitEditing={handleSaveEdit}
-                        testID="edit-weigh-in-date-input"
-                      />
-                      <TouchableOpacity
-                        style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
-                        onPress={() => {
-                          console.log("[DatePicker] Edit calendar button pressed");
-                          setDatePickerType("edit");
-                          setShowDatePicker(true);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel="Open calendar"
-                        testID="open-edit-date-picker"
-                        activeOpacity={0.7}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <CalendarDays color={colors.primary} size={20} />
-                      </TouchableOpacity>
-                    </View>
+                    <TextInput
+                      style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                      placeholderTextColor={colors.textTertiary}
+                      value={editDate}
+                      onChangeText={(text) => setEditDate(formatDateInput(text))}
+                      keyboardType="number-pad"
+                      placeholder="MM/DD/YYYY"
+                      maxLength={10}
+                      returnKeyType="done"
+                      onSubmitEditing={handleSaveEdit}
+                      testID="edit-weigh-in-date-input"
+                    />
 
                     <TouchableOpacity style={[styles.modalButton, { backgroundColor: colors.primary }]} onPress={handleSaveEdit}>
                       <Text style={styles.modalButtonText}>Save Changes</Text>
@@ -1021,34 +1004,17 @@ export default function WeightScreen() {
                     />
 
                     <Text style={[styles.inputLabel, { color: colors.text }]}>Starting Date (MM/DD/YYYY)</Text>
-                    <View style={styles.dateInputRow}>
-                      <TextInput
-                        style={[styles.input, { flex: 1, backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
-                        placeholderTextColor={colors.textTertiary}
-                        value={editStartDate}
-                        onChangeText={(text) => setEditStartDate(formatDateInput(text))}
-                        keyboardType="number-pad"
-                        placeholder="MM/DD/YYYY"
-                        maxLength={10}
-                        returnKeyType="done"
-                        testID="start-date-input"
-                      />
-                      <TouchableOpacity
-                        style={[styles.datePickerButton, { borderColor: colors.border, backgroundColor: colors.surface }]}
-                        onPress={() => {
-                          console.log("[DatePicker] Start calendar button pressed");
-                          setDatePickerType("start");
-                          setShowDatePicker(true);
-                        }}
-                        accessibilityRole="button"
-                        accessibilityLabel="Open calendar"
-                        testID="open-start-date-picker"
-                        activeOpacity={0.7}
-                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                      >
-                        <CalendarDays color={colors.primary} size={20} />
-                      </TouchableOpacity>
-                    </View>
+                    <TextInput
+                      style={[styles.input, { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border }]}
+                      placeholderTextColor={colors.textTertiary}
+                      value={editStartDate}
+                      onChangeText={(text) => setEditStartDate(formatDateInput(text))}
+                      keyboardType="number-pad"
+                      placeholder="MM/DD/YYYY"
+                      maxLength={10}
+                      returnKeyType="done"
+                      testID="start-date-input"
+                    />
 
                     <TouchableOpacity 
                       style={[styles.modalButton, { backgroundColor: colors.primary }]} 
