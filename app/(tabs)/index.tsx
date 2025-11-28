@@ -1163,16 +1163,13 @@ const styles = StyleSheet.create({
     alignItems: "center" as const,
     paddingTop: scale(9),
     paddingBottom: 0,
-    zIndex: 10,
-    position: "relative" as const,
   },
   logoImage: {
-    width: wp(50),
-    height: hp(8),
+    width: wp(60),
+    height: hp(6),
     resizeMode: "contain" as const,
     alignSelf: "center" as const,
     marginBottom: 0,
-    zIndex: 10,
   },
   dateText: {
     fontSize: 13,
